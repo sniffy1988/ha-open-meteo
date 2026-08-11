@@ -6,18 +6,6 @@ from datetime import timedelta
 import logging
 from typing import Final
 
-from homeassistant.components.weather import (
-    ATTR_CONDITION_CLEAR_NIGHT,
-    ATTR_CONDITION_CLOUDY,
-    ATTR_CONDITION_FOG,
-    ATTR_CONDITION_LIGHTNING,
-    ATTR_CONDITION_PARTLYCLOUDY,
-    ATTR_CONDITION_POURING,
-    ATTR_CONDITION_RAINY,
-    ATTR_CONDITION_SNOWY,
-    ATTR_CONDITION_SUNNY,
-)
-
 DOMAIN: Final = "ha_open_meteo"
 LOGGER = logging.getLogger(__package__)
 
@@ -234,35 +222,98 @@ WEATHER_DAILY_VARS: Final = [
     "uv_index_max",
 ]
 
+# Keep these as literals so const.py never imports homeassistant.components.weather
+# (that circular import makes custom config flows fail with "Invalid handler specified").
 WMO_TO_HA_CONDITION_MAP = {
-    0: ATTR_CONDITION_SUNNY,
-    1: ATTR_CONDITION_SUNNY,
-    2: ATTR_CONDITION_PARTLYCLOUDY,
-    3: ATTR_CONDITION_CLOUDY,
-    45: ATTR_CONDITION_FOG,
-    48: ATTR_CONDITION_FOG,
-    51: ATTR_CONDITION_RAINY,
-    53: ATTR_CONDITION_RAINY,
-    55: ATTR_CONDITION_RAINY,
-    56: ATTR_CONDITION_RAINY,
-    57: ATTR_CONDITION_RAINY,
-    61: ATTR_CONDITION_RAINY,
-    63: ATTR_CONDITION_RAINY,
-    65: ATTR_CONDITION_POURING,
-    66: ATTR_CONDITION_RAINY,
-    67: ATTR_CONDITION_POURING,
-    71: ATTR_CONDITION_SNOWY,
-    73: ATTR_CONDITION_SNOWY,
-    75: ATTR_CONDITION_SNOWY,
-    77: ATTR_CONDITION_SNOWY,
-    80: ATTR_CONDITION_RAINY,
-    81: ATTR_CONDITION_RAINY,
-    82: ATTR_CONDITION_POURING,
-    85: ATTR_CONDITION_SNOWY,
-    86: ATTR_CONDITION_SNOWY,
-    95: ATTR_CONDITION_LIGHTNING,
-    96: ATTR_CONDITION_LIGHTNING,
-    99: ATTR_CONDITION_LIGHTNING,
+    0: "sunny",
+    1: "sunny",
+    2: "partlycloudy",
+    3: "cloudy",
+    45: "fog",
+    48: "fog",
+    51: "rainy",
+    53: "rainy",
+    55: "rainy",
+    56: "rainy",
+    57: "rainy",
+    61: "rainy",
+    63: "rainy",
+    65: "pouring",
+    66: "rainy",
+    67: "pouring",
+    71: "snowy",
+    73: "snowy",
+    75: "snowy",
+    77: "snowy",
+    80: "rainy",
+    81: "rainy",
+    82: "pouring",
+    85: "snowy",
+    86: "snowy",
+    95: "lightning",
+    96: "lightning",
+    99: "lightning",
 }
 
-CLEAR_NIGHT = ATTR_CONDITION_CLEAR_NIGHT
+CLEAR_NIGHT = "clear-night"
+
+GROUP_LABELS: Final[dict[str, str]] = {
+    "current": "Current conditions",
+    "hourly_core": "Hourly (core)",
+    "hourly_extra": "Hourly (additional)",
+    "minutely_15": "15-minutely",
+    "daily_core": "Daily (core)",
+    "daily_extra": "Daily (additional)",
+    "solar": "Solar radiation",
+    "soil": "Soil",
+    "pressure_levels": "Pressure levels",
+    "pollutants": "Pollutants",
+    "aqi": "Air quality index",
+    "pollen": "Pollen",
+    "extra": "Additional air quality",
+    "hourly": "Hourly",
+    "waves": "Waves",
+    "swell": "Swell",
+    "currents": "Currents and sea level",
+    "sst": "Sea surface temperature",
+    "daily": "Daily",
+    "discharge": "River discharge",
+    "weekly": "Weekly",
+    "monthly": "Monthly",
+}
+
+MODULE_GROUP_IDS: Final[dict[str, tuple[str, ...]]] = {
+    MODULE_FORECAST: (
+        "current",
+        "hourly_core",
+        "hourly_extra",
+        "minutely_15",
+        "daily_core",
+        "daily_extra",
+        "solar",
+        "soil",
+        "pressure_levels",
+    ),
+    MODULE_AIR_QUALITY: ("pollutants", "aqi", "pollen", "extra", "hourly"),
+    MODULE_MARINE: ("waves", "swell", "currents", "sst", "daily"),
+    MODULE_FLOOD: ("discharge",),
+    MODULE_ENSEMBLE: ("hourly_core", "daily_core"),
+    MODULE_SEASONAL: ("hourly_core", "daily", "weekly", "monthly"),
+}
+
+DEFAULT_GROUPS: Final[dict[str, list[str]]] = {
+    MODULE_FORECAST: ["current", "hourly_core", "daily_core"],
+    MODULE_AIR_QUALITY: ["pollutants", "aqi"],
+    MODULE_MARINE: ["waves", "sst"],
+    MODULE_FLOOD: ["discharge"],
+    MODULE_ENSEMBLE: ["hourly_core"],
+    MODULE_SEASONAL: ["daily"],
+}
+
+
+def group_options(module: str) -> list[tuple[str, str]]:
+    """Return (value, label) pairs for a module's groups."""
+    return [
+        (group_id, GROUP_LABELS.get(group_id, group_id))
+        for group_id in MODULE_GROUP_IDS.get(module, ())
+    ]

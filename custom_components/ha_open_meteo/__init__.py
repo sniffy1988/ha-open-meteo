@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import Any
 
 from homeassistant.config_entries import ConfigEntry, ConfigEntryState
 from homeassistant.const import Platform
@@ -12,9 +13,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import OpenMeteoClient
 from .const import DOMAIN, LIVE_MODULES, LOGGER, MODULE_FORECAST
-from .coordinator import HaOpenMeteoCoordinator
 from .helpers import configured_modules
-from .services import async_setup_services, async_unload_services
 
 
 @dataclass
@@ -22,15 +21,18 @@ class HaOpenMeteoRuntimeData:
     """Runtime objects attached to a config entry."""
 
     client: OpenMeteoClient
-    coordinators: dict[str, HaOpenMeteoCoordinator]
-    platforms: list[Platform]
+    coordinators: dict[str, Any] = field(default_factory=dict)
+    platforms: list[Platform] = field(default_factory=list)
 
 
-type HaOpenMeteoConfigEntry = ConfigEntry[HaOpenMeteoRuntimeData]
+HaOpenMeteoConfigEntry = ConfigEntry[HaOpenMeteoRuntimeData]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: HaOpenMeteoConfigEntry) -> bool:
     """Set up a location from a config entry."""
+    from .coordinator import HaOpenMeteoCoordinator
+    from .services import async_setup_services
+
     client = OpenMeteoClient(async_get_clientsession(hass))
     coordinators: dict[str, HaOpenMeteoCoordinator] = {}
     errors: list[str] = []
@@ -44,7 +46,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: HaOpenMeteoConfigEntry) 
         except ConfigEntryNotReady as err:
             LOGGER.warning("Initial %s fetch failed for %s: %s", module, entry.title, err)
             errors.append(f"{module}: {err}")
-            # Keep the coordinator so other modules and later retries still work.
             coordinators[module] = coordinator
             continue
         coordinators[module] = coordinator
@@ -80,5 +81,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: HaOpenMeteoConfigEntry)
         if item.entry_id != entry.entry_id and item.state is ConfigEntryState.LOADED
     ]
     if unload_ok and not remaining:
+        from .services import async_unload_services
+
         async_unload_services(hass)
     return unload_ok

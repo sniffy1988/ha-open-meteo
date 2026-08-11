@@ -18,11 +18,10 @@ from homeassistant.const import (
     UnitOfSpeed,
     UnitOfTemperature,
 )
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.typing import StateType
-
-from . import HaOpenMeteoConfigEntry
 from .const import (
     MODULE_ELEVATION,
     PRECIP_UNIT_INCH,
@@ -50,7 +49,7 @@ class OpenMeteoSensorEntityDescription(SensorEntityDescription):
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    entry: HaOpenMeteoConfigEntry,
+    entry: ConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Create sensors for every selected variable."""
@@ -87,7 +86,7 @@ class HaOpenMeteoSensor(HaOpenMeteoEntity, SensorEntity):
     def __init__(
         self,
         coordinator: HaOpenMeteoCoordinator,
-        entry: HaOpenMeteoConfigEntry,
+        entry: ConfigEntry,
         description: OpenMeteoSensorEntityDescription,
     ) -> None:
         super().__init__(coordinator, entry)

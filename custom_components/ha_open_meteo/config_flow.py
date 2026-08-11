@@ -6,7 +6,12 @@ from typing import Any
 
 import voluptuous as vol
 
-from homeassistant.config_entries import ConfigFlow, ConfigFlowResult, OptionsFlowWithReload
+from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
+
+try:
+    from homeassistant.config_entries import OptionsFlowWithReload
+except ImportError:  # HA < 2024.11
+    from homeassistant.config_entries import OptionsFlow as OptionsFlowWithReload
 from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE, CONF_NAME
 from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
@@ -41,6 +46,7 @@ from .const import (
     CONF_UPDATE_INTERVAL,
     CONF_WIND_SPEED_UNIT,
     DEFAULT_FORECAST_DAYS,
+    DEFAULT_GROUPS,
     DEFAULT_MODELS,
     DEFAULT_MODULES,
     DEFAULT_NAME,
@@ -64,9 +70,9 @@ from .const import (
     WIND_UNIT_KN,
     WIND_UNIT_MPH,
     WIND_UNIT_MS,
+    group_options,
 )
 from .helpers import location_unique_id
-from .models.variables import DEFAULT_GROUPS, group_options
 
 MODULE_LABELS = {
     "forecast": "Weather Forecast",

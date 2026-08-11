@@ -22,6 +22,7 @@ from .const import (
     CONF_UPDATE_INTERVAL,
     CONF_WIND_SPEED_UNIT,
     DEFAULT_FORECAST_DAYS,
+    DEFAULT_GROUPS,
     DEFAULT_MODELS,
     DEFAULT_MODULES,
     DEFAULT_PRECIPITATION_UNIT,
@@ -30,7 +31,6 @@ from .const import (
     DEFAULT_UPDATE_INTERVAL_MINUTES,
     DEFAULT_WIND_SPEED_UNIT,
 )
-from .models.variables import DEFAULT_GROUPS
 
 
 def location_unique_id(latitude: float, longitude: float) -> str:

@@ -18,7 +18,6 @@ from homeassistant.const import (
     UnitOfTemperature,
     UnitOfTime,
     UnitOfVolumeFlowRate,
-    UV_INDEX,
 )
 
 from ..const import (
@@ -29,6 +28,14 @@ from ..const import (
     MODULE_MARINE,
     MODULE_SEASONAL,
 )
+
+try:
+    from homeassistant.const import UV_INDEX
+except ImportError:  # pragma: no cover - older/newer HA
+    UV_INDEX = "UV index"
+
+# Removed from SensorDeviceClass in HA 2026; keep a fallback so the catalog still imports.
+_UV_DEVICE_CLASS: SensorDeviceClass | None = getattr(SensorDeviceClass, "UV_INDEX", None)
 
 BUCKET_CURRENT = "current"
 BUCKET_HOURLY = "hourly"
@@ -190,8 +197,8 @@ FORECAST_HOURLY_EXTRA = [
     _temp("temperature_80m", "Temperature 80 m", BUCKET_HOURLY),
     _temp("temperature_120m", "Temperature 120 m", BUCKET_HOURLY),
     _temp("temperature_180m", "Temperature 180 m", BUCKET_HOURLY),
-    _v("uv_index", "UV index", BUCKET_HOURLY, dc=SensorDeviceClass.UV_INDEX, unit=UV_INDEX),
-    _v("uv_index_clear_sky", "UV index clear sky", BUCKET_HOURLY, dc=SensorDeviceClass.UV_INDEX, unit=UV_INDEX),
+    _v("uv_index", "UV index", BUCKET_HOURLY, dc=_UV_DEVICE_CLASS, unit=UV_INDEX),
+    _v("uv_index_clear_sky", "UV index clear sky", BUCKET_HOURLY, dc=_UV_DEVICE_CLASS, unit=UV_INDEX),
     _v("is_day", "Is day", BUCKET_HOURLY, icon="mdi:weather-sunset", sc=None),
     _v("sunshine_duration", "Sunshine duration", BUCKET_HOURLY, dc=SensorDeviceClass.DURATION, unit=UnitOfTime.SECONDS),
     _temp("wet_bulb_temperature_2m", "Wet bulb temperature", BUCKET_HOURLY),
@@ -271,8 +278,8 @@ FORECAST_DAILY_CORE = [
     _temp("temperature_2m_min", "Minimum temperature", BUCKET_DAILY),
     _temp("apparent_temperature_max", "Maximum apparent temperature", BUCKET_DAILY),
     _temp("apparent_temperature_min", "Minimum apparent temperature", BUCKET_DAILY),
-    _v("uv_index_max", "UV index max", BUCKET_DAILY, dc=SensorDeviceClass.UV_INDEX, unit=UV_INDEX),
-    _v("uv_index_clear_sky_max", "UV index clear sky max", BUCKET_DAILY, dc=SensorDeviceClass.UV_INDEX, unit=UV_INDEX),
+    _v("uv_index_max", "UV index max", BUCKET_DAILY, dc=_UV_DEVICE_CLASS, unit=UV_INDEX),
+    _v("uv_index_clear_sky_max", "UV index clear sky max", BUCKET_DAILY, dc=_UV_DEVICE_CLASS, unit=UV_INDEX),
     _v("sunrise", "Sunrise", BUCKET_DAILY, dc=SensorDeviceClass.TIMESTAMP, sc=None, icon="mdi:weather-sunset-up"),
     _v("sunset", "Sunset", BUCKET_DAILY, dc=SensorDeviceClass.TIMESTAMP, sc=None, icon="mdi:weather-sunset-down"),
     _v("daylight_duration", "Daylight duration", BUCKET_DAILY, dc=SensorDeviceClass.DURATION, unit=UnitOfTime.SECONDS),
@@ -413,8 +420,8 @@ AQ_POLLEN = [
 
 AQ_EXTRA = [
     _v("aerosol_optical_depth", "Aerosol optical depth", BUCKET_CURRENT, icon="mdi:blur"),
-    _v("uv_index", "UV index", BUCKET_CURRENT, dc=SensorDeviceClass.UV_INDEX, unit=UV_INDEX),
-    _v("uv_index_clear_sky", "UV index clear sky", BUCKET_CURRENT, dc=SensorDeviceClass.UV_INDEX, unit=UV_INDEX),
+    _v("uv_index", "UV index", BUCKET_CURRENT, dc=_UV_DEVICE_CLASS, unit=UV_INDEX),
+    _v("uv_index_clear_sky", "UV index clear sky", BUCKET_CURRENT, dc=_UV_DEVICE_CLASS, unit=UV_INDEX),
 ]
 
 AQ_HOURLY = [
@@ -575,31 +582,6 @@ SEASONAL_MONTHLY = [
 ]
 
 
-GROUP_LABELS: dict[str, str] = {
-    "current": "Current conditions",
-    "hourly_core": "Hourly (core)",
-    "hourly_extra": "Hourly (additional)",
-    "minutely_15": "15-minutely",
-    "daily_core": "Daily (core)",
-    "daily_extra": "Daily (additional)",
-    "solar": "Solar radiation",
-    "soil": "Soil",
-    "pressure_levels": "Pressure levels",
-    "pollutants": "Pollutants",
-    "aqi": "Air quality index",
-    "pollen": "Pollen",
-    "extra": "Additional air quality",
-    "hourly": "Hourly",
-    "waves": "Waves",
-    "swell": "Swell",
-    "currents": "Currents and sea level",
-    "sst": "Sea surface temperature",
-    "daily": "Daily",
-    "discharge": "River discharge",
-    "weekly": "Weekly",
-    "monthly": "Monthly",
-}
-
 MODULE_GROUPS: dict[str, dict[str, list[VariableDef]]] = {
     MODULE_FORECAST: {
         "current": FORECAST_CURRENT,
@@ -640,22 +622,6 @@ MODULE_GROUPS: dict[str, dict[str, list[VariableDef]]] = {
         "monthly": SEASONAL_MONTHLY,
     },
 }
-
-DEFAULT_GROUPS: dict[str, list[str]] = {
-    MODULE_FORECAST: ["current", "hourly_core", "daily_core"],
-    MODULE_AIR_QUALITY: ["pollutants", "aqi"],
-    MODULE_MARINE: ["waves", "sst"],
-    MODULE_FLOOD: ["discharge"],
-    MODULE_ENSEMBLE: ["hourly_core"],
-    MODULE_SEASONAL: ["daily"],
-}
-
-
-def group_options(module: str) -> list[tuple[str, str]]:
-    """Return (value, label) pairs for a module's groups."""
-    groups = MODULE_GROUPS.get(module, {})
-    return [(group_id, GROUP_LABELS.get(group_id, group_id)) for group_id in groups]
-
 
 def expand_variables(
     module: str,

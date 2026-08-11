@@ -25,11 +25,10 @@ from homeassistant.const import (
     UnitOfSpeed,
     UnitOfTemperature,
 )
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.util import dt as dt_util
-
-from . import HaOpenMeteoConfigEntry
 from .const import (
     CLEAR_NIGHT,
     MODULE_FORECAST,
@@ -49,7 +48,7 @@ PARALLEL_UPDATES = 0
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    entry: HaOpenMeteoConfigEntry,
+    entry: ConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up the weather entity for this location."""
@@ -76,7 +75,7 @@ class HaOpenMeteoWeatherEntity(
     def __init__(
         self,
         coordinator: HaOpenMeteoCoordinator,
-        entry: HaOpenMeteoConfigEntry,
+        entry: ConfigEntry,
     ) -> None:
         super().__init__(coordinator)
         self.entry = entry
