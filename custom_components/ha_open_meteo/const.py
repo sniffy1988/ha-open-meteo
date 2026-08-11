@@ -302,12 +302,37 @@ MODULE_GROUP_IDS: Final[dict[str, tuple[str, ...]]] = {
 }
 
 DEFAULT_GROUPS: Final[dict[str, list[str]]] = {
-    MODULE_FORECAST: ["current", "hourly_core", "daily_core"],
+    MODULE_FORECAST: ["current"],
     MODULE_AIR_QUALITY: ["pollutants", "aqi"],
     MODULE_MARINE: ["waves", "sst"],
     MODULE_FLOOD: ["discharge"],
     MODULE_ENSEMBLE: ["hourly_core"],
     MODULE_SEASONAL: ["daily"],
+}
+
+# Only these sensors are enabled in the UI by default. Everything else from a
+# selected group is still created, but disabled until the user turns it on.
+CORE_SENSORS: Final[set[tuple[str, str, str]]] = {
+    (MODULE_FORECAST, "current", "temperature_2m"),
+    (MODULE_FORECAST, "current", "relative_humidity_2m"),
+    (MODULE_FORECAST, "current", "apparent_temperature"),
+    (MODULE_FORECAST, "current", "precipitation"),
+    (MODULE_FORECAST, "current", "weather_code"),
+    (MODULE_FORECAST, "current", "cloud_cover"),
+    (MODULE_FORECAST, "current", "pressure_msl"),
+    (MODULE_FORECAST, "current", "wind_speed_10m"),
+    (MODULE_FORECAST, "current", "wind_direction_10m"),
+    (MODULE_FORECAST, "current", "wind_gusts_10m"),
+    (MODULE_AIR_QUALITY, "current", "pm10"),
+    (MODULE_AIR_QUALITY, "current", "pm2_5"),
+    (MODULE_AIR_QUALITY, "current", "european_aqi"),
+    (MODULE_AIR_QUALITY, "current", "us_aqi"),
+    (MODULE_MARINE, "current", "wave_height"),
+    (MODULE_MARINE, "current", "sea_surface_temperature"),
+    (MODULE_FLOOD, "daily", "river_discharge"),
+    (MODULE_ENSEMBLE, "hourly", "temperature_2m"),
+    (MODULE_SEASONAL, "daily", "temperature_2m_mean"),
+    (MODULE_SEASONAL, "daily", "precipitation_sum"),
 }
 
 

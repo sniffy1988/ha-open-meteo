@@ -8,7 +8,7 @@ Core Home Assistant already ships a basic Open-Meteo weather entity. This integr
 
 - **Multiple places** — add the integration once per location (home, cottage, city, …). Each place has its own device, entities, and options.
 - **Weather Forecast** — `weather` entity with current conditions plus daily and hourly forecasts (`weather.get_forecasts`).
-- **Selectable variable groups** — sensors are created only for the groups you enable (current, hourly, 15-minutely, daily, solar, soil, pressure levels, and more).
+- **Selectable variable groups** — sensors are created only for the groups you enable. A small core set (temperature, humidity, wind, AQI, …) is enabled by default; the rest stay disabled until you turn them on under the device. Hourly/daily timelines live on the `weather` entity, so those groups are not enabled by default.
 - **Air Quality** — pollutants, European/US AQI, pollen.
 - **Marine** — waves, swell, currents, sea surface temperature.
 - **Flood** — GloFAS river discharge.
@@ -32,7 +32,7 @@ Copy `custom_components/ha_open_meteo` into your Home Assistant `custom_componen
 
 1. Name the location and set coordinates (map) or search by place name (Open-Meteo Geocoding).
 2. Pick API modules.
-3. Pick variable groups for each live module.
+3. Pick variable groups for each live module. Extra sensors from a group appear disabled — enable the ones you need on the device page.
 4. Set units, forecast length, models, pressure levels, and update interval.
 
 Change modules and groups later via the integration’s **Configure** options. To add another place, add the integration again.

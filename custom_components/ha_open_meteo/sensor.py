@@ -23,6 +23,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.typing import StateType
 from .const import (
+    CORE_SENSORS,
     MODULE_ELEVATION,
     PRECIP_UNIT_INCH,
     TEMP_UNIT_FAHRENHEIT,
@@ -66,12 +67,20 @@ async def async_setup_entry(
                 )
             )
             continue
-        for variable in coordinator.selected_variables():
+        selected = coordinator.selected_variables()
+        current_keys = {
+            variable.key for variable in selected if variable.bucket == BUCKET_CURRENT
+        }
+        for variable in selected:
+            if _is_duplicate_series(variable, current_keys):
+                continue
             entities.append(
                 HaOpenMeteoSensor(
                     coordinator,
                     entry,
-                    _description_from_variable(module, variable, temp_unit, wind_unit, precip_unit),
+                    _description_from_variable(
+                        module, variable, temp_unit, wind_unit, precip_unit
+                    ),
                 )
             )
 
@@ -132,6 +141,7 @@ def _elevation_description() -> OpenMeteoSensorEntityDescription:
         native_unit_of_measurement=UnitOfLength.METERS,
         icon="mdi:image-filter-hdr",
         entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
     )
 
 
@@ -142,6 +152,15 @@ _BUCKET_SUFFIX = {
     "weekly": "weekly",
     "monthly": "monthly",
 }
+
+
+def _is_duplicate_series(variable: VariableDef, current_keys: set[str]) -> bool:
+    """Skip hourly/15-min copies when a current sensor already covers the key."""
+    return variable.bucket in {"hourly", "minutely_15"} and variable.key in current_keys
+
+
+def _is_core_sensor(module: str, variable: VariableDef) -> bool:
+    return (module, variable.bucket, variable.key) in CORE_SENSORS
 
 
 def _sensor_name(variable: VariableDef) -> str:
@@ -162,6 +181,7 @@ def _description_from_variable(
     precip_unit: str,
 ) -> OpenMeteoSensorEntityDescription:
     unit = _native_unit(variable, temp_unit, wind_unit, precip_unit)
+    diagnostic = variable.key in {"weather_code", "is_day"}
     return OpenMeteoSensorEntityDescription(
         key=f"{module}_{variable.bucket}_{variable.key}",
         name=_sensor_name(variable),
@@ -172,6 +192,8 @@ def _description_from_variable(
         state_class=variable.state_class,
         native_unit_of_measurement=unit,
         icon=variable.icon,
+        entity_category=EntityCategory.DIAGNOSTIC if diagnostic else None,
+        entity_registry_enabled_default=_is_core_sensor(module, variable),
     )
 
 
