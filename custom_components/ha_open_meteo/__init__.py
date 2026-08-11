@@ -12,7 +12,15 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import OpenMeteoClient
-from .const import CONF_GROUPS, CONF_MODULES, DOMAIN, LIVE_MODULES, LOGGER, MODULE_FORECAST
+from .const import (
+    CONF_GROUPS,
+    CONF_MODULES,
+    DEFAULT_MODULES,
+    DOMAIN,
+    LIVE_MODULES,
+    LOGGER,
+    MODULE_FORECAST,
+)
 from .helpers import configured_modules, default_groups_for_modules
 
 
@@ -29,17 +37,17 @@ HaOpenMeteoConfigEntry = ConfigEntry[HaOpenMeteoRuntimeData]
 
 
 async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Slim stored groups so existing installs drop the huge sensor set."""
-    if entry.version > 2:
+    """Reset extra modules/groups so existing installs are not overloaded."""
+    if entry.version > 3:
         return False
-    if entry.version < 2:
+    if entry.version < 3:
         options = dict(entry.options)
-        modules = list(
-            options.get(CONF_MODULES) or entry.data.get(CONF_MODULES) or configured_modules(entry)
+        options[CONF_MODULES] = list(DEFAULT_MODULES)
+        options[CONF_GROUPS] = default_groups_for_modules(DEFAULT_MODULES)
+        hass.config_entries.async_update_entry(entry, options=options, version=3)
+        LOGGER.info(
+            "Migrated %s to config version 3 (weather + air quality only)", entry.title
         )
-        options[CONF_GROUPS] = default_groups_for_modules(modules)
-        hass.config_entries.async_update_entry(entry, options=options, version=2)
-        LOGGER.info("Migrated %s to config version 2 (core sensor groups)", entry.title)
     return True
 
 

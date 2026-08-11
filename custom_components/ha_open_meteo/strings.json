@@ -31,14 +31,14 @@
       },
       "modules": {
         "title": "API modules",
-        "description": "Choose which Open-Meteo APIs to use for this place. Historical and climate data are available as actions, not live sensors.",
+        "description": "Weather Forecast and Air Quality are enough for most homes. Marine, flood, ensemble, seasonal, and extra sensor groups are optional.",
         "data": {
           "modules": "Modules"
         }
       },
       "groups": {
         "title": "Variable groups",
-        "description": "Hourly and daily forecasts live on the weather entity. Current conditions create a small core sensor set. Enable extra groups (solar, soil, pollen, …) only if you want those extra sensors.",
+        "description": "Leave extras off unless you need pollen, solar, soil, or similar sensors. Temperature and forecasts stay on the weather entity.",
         "data": {
           "groups_forecast": "Forecast",
           "groups_air_quality": "Air quality",
@@ -49,7 +49,8 @@
         }
       },
       "settings": {
-        "title": "Units and models",
+        "title": "Units",
+        "description": "Creates a weather entity plus air quality, pollen, solar, and soil sensors. Temperature and forecasts stay on the weather entity. Extra APIs are under Configure.",
         "data": {
           "temperature_unit": "Temperature unit",
           "wind_speed_unit": "Wind speed unit",
@@ -75,7 +76,7 @@
     "step": {
       "modules": {
         "title": "API modules",
-        "description": "Enable or disable Open-Meteo APIs for this place.",
+        "description": "Weather Forecast and Air Quality are enough for most homes. Only enable extras if you need them. Historical and climate data are actions, not sensors.",
         "data": {
           "modules": "Modules"
         }

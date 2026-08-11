@@ -296,13 +296,14 @@ TIMELINE_GROUPS: Final[dict[str, frozenset[str]]] = {
     MODULE_AIR_QUALITY: frozenset({"hourly"}),
 }
 
-# These groups only expose CORE_SENSORS. Opt-in groups (pollen, solar, …) create
-# every variable in the group.
+# These groups only expose CORE_SENSORS (no instant/hourly copies or extra depths).
 CORE_ONLY_GROUPS: Final[frozenset[str]] = frozenset(
     {
-        "current",
         "pollutants",
         "aqi",
+        "pollen",
+        "solar",
+        "soil",
         "waves",
         "sst",
         "discharge",
@@ -326,37 +327,38 @@ MODULE_GROUP_IDS: Final[dict[str, tuple[str, ...]]] = {
 }
 
 DEFAULT_GROUPS: Final[dict[str, list[str]]] = {
-    MODULE_FORECAST: ["current"],
-    MODULE_AIR_QUALITY: ["pollutants", "aqi"],
+    MODULE_FORECAST: ["solar", "soil"],
+    MODULE_AIR_QUALITY: ["pollutants", "aqi", "pollen"],
     MODULE_MARINE: ["waves", "sst"],
     MODULE_FLOOD: ["discharge"],
     MODULE_ENSEMBLE: ["hourly_core"],
     MODULE_SEASONAL: ["daily"],
 }
 
-# Only these sensors are enabled in the UI by default. Everything else from a
-# selected group is still created, but disabled until the user turns it on.
+# Weather entity already has temperature/wind/forecasts. Sensors below are the
+# unique extras — no instant copies, 15-min copies, or extra soil layers.
 CORE_SENSORS: Final[set[tuple[str, str, str]]] = {
-    (MODULE_FORECAST, "current", "temperature_2m"),
-    (MODULE_FORECAST, "current", "relative_humidity_2m"),
-    (MODULE_FORECAST, "current", "apparent_temperature"),
-    (MODULE_FORECAST, "current", "precipitation"),
-    (MODULE_FORECAST, "current", "weather_code"),
-    (MODULE_FORECAST, "current", "cloud_cover"),
-    (MODULE_FORECAST, "current", "pressure_msl"),
-    (MODULE_FORECAST, "current", "wind_speed_10m"),
-    (MODULE_FORECAST, "current", "wind_direction_10m"),
-    (MODULE_FORECAST, "current", "wind_gusts_10m"),
     (MODULE_AIR_QUALITY, "current", "pm10"),
     (MODULE_AIR_QUALITY, "current", "pm2_5"),
     (MODULE_AIR_QUALITY, "current", "european_aqi"),
-    (MODULE_AIR_QUALITY, "current", "us_aqi"),
+    (MODULE_AIR_QUALITY, "current", "alder_pollen"),
+    (MODULE_AIR_QUALITY, "current", "birch_pollen"),
+    (MODULE_AIR_QUALITY, "current", "grass_pollen"),
+    (MODULE_AIR_QUALITY, "current", "mugwort_pollen"),
+    (MODULE_AIR_QUALITY, "current", "olive_pollen"),
+    (MODULE_AIR_QUALITY, "current", "ragweed_pollen"),
+    (MODULE_FORECAST, "hourly", "shortwave_radiation"),
+    (MODULE_FORECAST, "hourly", "diffuse_radiation"),
+    (MODULE_FORECAST, "hourly", "direct_normal_irradiance"),
+    (MODULE_FORECAST, "hourly", "soil_temperature_0cm"),
+    (MODULE_FORECAST, "hourly", "soil_temperature_18cm"),
+    (MODULE_FORECAST, "hourly", "soil_moisture_0_to_1cm"),
+    (MODULE_FORECAST, "hourly", "soil_moisture_9_to_27cm"),
     (MODULE_MARINE, "current", "wave_height"),
     (MODULE_MARINE, "current", "sea_surface_temperature"),
     (MODULE_FLOOD, "daily", "river_discharge"),
     (MODULE_ENSEMBLE, "hourly", "temperature_2m"),
     (MODULE_SEASONAL, "daily", "temperature_2m_mean"),
-    (MODULE_SEASONAL, "daily", "precipitation_sum"),
 }
 
 

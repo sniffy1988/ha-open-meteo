@@ -72,7 +72,7 @@ from .const import (
     WIND_UNIT_MS,
     group_options,
 )
-from .helpers import location_unique_id
+from .helpers import default_groups_for_modules, location_unique_id
 
 MODULE_LABELS = {
     "forecast": "Weather Forecast",
@@ -90,7 +90,7 @@ MODULE_LABELS = {
 class HaOpenMeteoConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle adding a location."""
 
-    VERSION = 2
+    VERSION = 3
 
     def __init__(self) -> None:
         self._data: dict[str, Any] = {}
@@ -217,7 +217,9 @@ class HaOpenMeteoConfigFlow(ConfigFlow, domain=DOMAIN):
         self._abort_if_unique_id_configured()
         self._data[CONF_LATITUDE] = latitude
         self._data[CONF_LONGITUDE] = longitude
-        return await self.async_step_modules()
+        self._options[CONF_MODULES] = list(DEFAULT_MODULES)
+        self._options[CONF_GROUPS] = default_groups_for_modules(DEFAULT_MODULES)
+        return await self.async_step_settings()
 
     async def async_step_modules(
         self, user_input: dict[str, Any] | None = None
@@ -267,7 +269,8 @@ class HaOpenMeteoConfigFlow(ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="settings",
             data_schema=_settings_schema(
-                include_forecast=MODULE_FORECAST in self._options.get(CONF_MODULES, [])
+                include_forecast=MODULE_FORECAST in self._options.get(CONF_MODULES, []),
+                simple=True,
             ),
         )
 
@@ -361,7 +364,12 @@ def _groups_schema(
         ]
         if not options:
             continue
-        default = current.get(module) or DEFAULT_GROUPS.get(module) or [options[0]["value"]]
+        if module in current:
+            default = list(current[module])
+        elif module in DEFAULT_GROUPS:
+            default = list(DEFAULT_GROUPS[module])
+        else:
+            default = [options[0]["value"]]
         schema[
             vol.Required(f"groups_{module}", default=default)
         ] = SelectSelector(
@@ -387,6 +395,7 @@ def _settings_schema(
     *,
     include_forecast: bool,
     options: dict[str, Any] | None = None,
+    simple: bool = False,
 ) -> vol.Schema:
     options = options or {}
     fields: dict[Any, Any] = {
@@ -437,19 +446,17 @@ def _settings_schema(
         ): NumberSelector(
             NumberSelectorConfig(min=5, max=180, step=5, mode=NumberSelectorMode.BOX)
         ),
-        vol.Required(
-            CONF_TILT,
-            default=options.get(CONF_TILT, 0),
-        ): NumberSelector(
-            NumberSelectorConfig(min=0, max=90, step=1, mode=NumberSelectorMode.BOX)
-        ),
-        vol.Required(
-            CONF_AZIMUTH,
-            default=options.get(CONF_AZIMUTH, 0),
-        ): NumberSelector(
-            NumberSelectorConfig(min=-180, max=180, step=1, mode=NumberSelectorMode.BOX)
-        ),
     }
+    if simple:
+        return vol.Schema(fields)
+    fields[vol.Required(CONF_TILT, default=options.get(CONF_TILT, 0))] = NumberSelector(
+        NumberSelectorConfig(min=0, max=90, step=1, mode=NumberSelectorMode.BOX)
+    )
+    fields[vol.Required(CONF_AZIMUTH, default=options.get(CONF_AZIMUTH, 0))] = (
+        NumberSelector(
+            NumberSelectorConfig(min=-180, max=180, step=1, mode=NumberSelectorMode.BOX)
+        )
+    )
     if include_forecast:
         fields[
             vol.Required(CONF_MODELS, default=options.get(CONF_MODELS, DEFAULT_MODELS))

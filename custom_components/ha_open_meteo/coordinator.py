@@ -13,6 +13,8 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from .api import OpenMeteoApiError, OpenMeteoClient
 from .api import endpoints
 from .const import (
+    CORE_ONLY_GROUPS,
+    CORE_SENSORS,
     ENSEMBLE_MODEL_CHOICES,
     LOGGER,
     MODULE_AIR_QUALITY,
@@ -22,6 +24,7 @@ from .const import (
     MODULE_FORECAST,
     MODULE_MARINE,
     MODULE_SEASONAL,
+    TIMELINE_GROUPS,
     WEATHER_CURRENT_VARS,
     WEATHER_DAILY_VARS,
     WEATHER_HOURLY_VARS,
@@ -129,13 +132,30 @@ class HaOpenMeteoCoordinator(DataUpdateCoordinator[ModuleData]):
         return parse_module_payload(payload)
 
     def selected_variables(self) -> list[VariableDef]:
-        """Variable defs enabled for this module."""
+        """Variable defs to fetch — core sensors only, no duplicate series."""
         groups = configured_groups(self.entry).get(self.module, [])
-        return expand_variables(
-            self.module,
-            groups,
-            configured_pressure_levels(self.entry),
-        )
+        selected: list[VariableDef] = []
+        seen: set[tuple[str, str]] = set()
+        for group_id in groups:
+            if group_id in TIMELINE_GROUPS.get(self.module, frozenset()):
+                continue
+            for variable in expand_variables(
+                self.module,
+                [group_id],
+                configured_pressure_levels(self.entry),
+            ):
+                if group_id in CORE_ONLY_GROUPS and (
+                    self.module,
+                    variable.bucket,
+                    variable.key,
+                ) not in CORE_SENSORS:
+                    continue
+                marker = (variable.bucket, variable.key)
+                if marker in seen:
+                    continue
+                seen.add(marker)
+                selected.append(variable)
+        return selected
 
     def _build_request(self) -> tuple[str, dict[str, Any]]:
         latitude = entry_latitude(self.entry)

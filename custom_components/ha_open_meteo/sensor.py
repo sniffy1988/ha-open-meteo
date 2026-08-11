@@ -199,6 +199,9 @@ def _sensor_name(variable: VariableDef) -> str:
     lowered = variable.name.lower()
     if suffix in lowered or "daily" in lowered or "weekly" in lowered or "monthly" in lowered:
         return variable.name
+    # Solar/soil only exist as hourly series — don't label them as copies.
+    if variable.key.startswith("soil_") or "radiation" in variable.key or "irradiance" in variable.key:
+        return variable.name
     return f"{variable.name} ({suffix})"
 
 
