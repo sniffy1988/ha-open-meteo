@@ -1,0 +1,12 @@
+{
+  "domain": "ha_open_meteo",
+  "name": "Open-Meteo Full",
+  "codeowners": ["@sniffy1988"],
+  "config_flow": true,
+  "documentation": "https://github.com/sniffy1988/ha-open-meteo",
+  "integration_type": "service",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/sniffy1988/ha-open-meteo/issues",
+  "requirements": [],
+  "version": "1.0.0"
+}

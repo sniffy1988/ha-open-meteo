@@ -1,0 +1,181 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Open-Meteo location",
+        "description": "Add a place. You can add the integration again for a second location.",
+        "data": {
+          "name": "Name",
+          "location_mode": "How to set coordinates"
+        }
+      },
+      "coordinates": {
+        "title": "Coordinates",
+        "description": "Defaults to your Home Assistant home location.",
+        "data": {
+          "location": "Location"
+        }
+      },
+      "search": {
+        "title": "Search place",
+        "description": "Look up a city, village, or postal code via the Open-Meteo Geocoding API.",
+        "data": {
+          "search": "Place name"
+        }
+      },
+      "place": {
+        "title": "Select place",
+        "data": {
+          "place": "Result"
+        }
+      },
+      "modules": {
+        "title": "API modules",
+        "description": "Choose which Open-Meteo APIs to use for this place. Historical and climate data are available as actions, not live sensors.",
+        "data": {
+          "modules": "Modules"
+        }
+      },
+      "groups": {
+        "title": "Variable groups",
+        "description": "Only selected groups become sensors. The weather entity is created when Weather Forecast is enabled.",
+        "data": {
+          "groups_forecast": "Forecast",
+          "groups_air_quality": "Air quality",
+          "groups_marine": "Marine",
+          "groups_flood": "Flood",
+          "groups_ensemble": "Ensemble",
+          "groups_seasonal": "Seasonal"
+        }
+      },
+      "settings": {
+        "title": "Units and models",
+        "data": {
+          "temperature_unit": "Temperature unit",
+          "wind_speed_unit": "Wind speed unit",
+          "precipitation_unit": "Precipitation unit",
+          "forecast_days": "Forecast days",
+          "update_interval": "Update interval",
+          "tilt": "Solar panel tilt (GTI)",
+          "azimuth": "Solar panel azimuth (0=S, -90=E, 90=W)",
+          "models": "Weather models",
+          "pressure_levels": "Pressure levels"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Could not reach Open-Meteo.",
+      "no_results": "No matching places found."
+    },
+    "abort": {
+      "already_configured": "This location is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "modules": {
+        "title": "API modules",
+        "description": "Enable or disable Open-Meteo APIs for this place.",
+        "data": {
+          "modules": "Modules"
+        }
+      },
+      "groups": {
+        "title": "Variable groups",
+        "description": "Sensors are created only for the groups you select.",
+        "data": {
+          "groups_forecast": "Forecast",
+          "groups_air_quality": "Air quality",
+          "groups_marine": "Marine",
+          "groups_flood": "Flood",
+          "groups_ensemble": "Ensemble",
+          "groups_seasonal": "Seasonal"
+        }
+      },
+      "settings": {
+        "title": "Units and models",
+        "data": {
+          "temperature_unit": "Temperature unit",
+          "wind_speed_unit": "Wind speed unit",
+          "precipitation_unit": "Precipitation unit",
+          "forecast_days": "Forecast days",
+          "update_interval": "Update interval",
+          "tilt": "Solar panel tilt (GTI)",
+          "azimuth": "Solar panel azimuth (0=S, -90=E, 90=W)",
+          "models": "Weather models",
+          "pressure_levels": "Pressure levels"
+        }
+      }
+    }
+  },
+  "services": {
+    "get_historical_weather": {
+      "name": "Get historical weather",
+      "description": "Fetch ERA5 historical weather for a date range.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Location",
+          "description": "Config entry used for coordinates and units."
+        },
+        "latitude": {
+          "name": "Latitude",
+          "description": "WGS84 latitude if no config entry is selected."
+        },
+        "longitude": {
+          "name": "Longitude",
+          "description": "WGS84 longitude if no config entry is selected."
+        },
+        "start_date": {
+          "name": "Start date",
+          "description": "First day to retrieve (YYYY-MM-DD)."
+        },
+        "end_date": {
+          "name": "End date",
+          "description": "Last day to retrieve (YYYY-MM-DD)."
+        },
+        "hourly": {
+          "name": "Hourly variables",
+          "description": "Open-Meteo hourly variable names."
+        },
+        "daily": {
+          "name": "Daily variables",
+          "description": "Open-Meteo daily variable names."
+        }
+      }
+    },
+    "get_climate_projection": {
+      "name": "Get climate projection",
+      "description": "Fetch CMIP6 climate projections for a date range.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Location",
+          "description": "Config entry used for coordinates and units."
+        },
+        "latitude": {
+          "name": "Latitude",
+          "description": "WGS84 latitude if no config entry is selected."
+        },
+        "longitude": {
+          "name": "Longitude",
+          "description": "WGS84 longitude if no config entry is selected."
+        },
+        "start_date": {
+          "name": "Start date",
+          "description": "First day to retrieve (YYYY-MM-DD)."
+        },
+        "end_date": {
+          "name": "End date",
+          "description": "Last day to retrieve (YYYY-MM-DD)."
+        },
+        "daily": {
+          "name": "Daily variables",
+          "description": "Climate daily variable names."
+        },
+        "models": {
+          "name": "Climate models",
+          "description": "CMIP6 model identifiers."
+        }
+      }
+    }
+  }
+}

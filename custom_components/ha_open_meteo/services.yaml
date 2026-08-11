@@ -1,0 +1,115 @@
+get_historical_weather:
+  name: Get historical weather
+  description: Fetch ERA5 historical weather for a date range. Returns the Open-Meteo JSON payload.
+  fields:
+    config_entry_id:
+      name: Location
+      description: Config entry to use for coordinates and units. Optional if latitude and longitude are set.
+      required: false
+      selector:
+        config_entry:
+          integration: ha_open_meteo
+    latitude:
+      name: Latitude
+      required: false
+      selector:
+        number:
+          min: -90
+          max: 90
+          step: 0.0001
+          mode: box
+    longitude:
+      name: Longitude
+      required: false
+      selector:
+        number:
+          min: -180
+          max: 180
+          step: 0.0001
+          mode: box
+    start_date:
+      name: Start date
+      required: true
+      selector:
+        date:
+    end_date:
+      name: End date
+      required: true
+      selector:
+        date:
+    hourly:
+      name: Hourly variables
+      description: Open-Meteo hourly variable names. Defaults to temperature, precipitation, and weather code.
+      required: false
+      selector:
+        text:
+          multiple: true
+    daily:
+      name: Daily variables
+      description: Open-Meteo daily variable names. Defaults to max/min temperature, precipitation sum, and weather code.
+      required: false
+      selector:
+        text:
+          multiple: true
+
+get_climate_projection:
+  name: Get climate projection
+  description: Fetch CMIP6 climate projections for a date range. Returns the Open-Meteo JSON payload.
+  fields:
+    config_entry_id:
+      name: Location
+      description: Config entry to use for coordinates and units. Optional if latitude and longitude are set.
+      required: false
+      selector:
+        config_entry:
+          integration: ha_open_meteo
+    latitude:
+      name: Latitude
+      required: false
+      selector:
+        number:
+          min: -90
+          max: 90
+          step: 0.0001
+          mode: box
+    longitude:
+      name: Longitude
+      required: false
+      selector:
+        number:
+          min: -180
+          max: 180
+          step: 0.0001
+          mode: box
+    start_date:
+      name: Start date
+      required: true
+      selector:
+        date:
+    end_date:
+      name: End date
+      required: true
+      selector:
+        date:
+    daily:
+      name: Daily variables
+      description: Climate daily variable names such as temperature_2m_mean or precipitation_sum.
+      required: false
+      selector:
+        text:
+          multiple: true
+    models:
+      name: Climate models
+      description: CMIP6 model ids. Defaults to MRI_AGCM3_2_S.
+      required: false
+      selector:
+        select:
+          multiple: true
+          options:
+            - CMCC_CM2_VHR4
+            - FGOALS_f3_H
+            - HiRAM_SIT_HR
+            - MRI_AGCM3_2_S
+            - EC_Earth3P_HR
+            - MPI_ESM1_2_XR
+            - NICAM16_8S

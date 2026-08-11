@@ -1,0 +1,5 @@
+{
+  "name": "Open-Meteo Full",
+  "render_readme": true,
+  "homeassistant": "2024.12.0"
+}
