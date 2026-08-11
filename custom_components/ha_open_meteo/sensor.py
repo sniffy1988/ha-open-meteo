@@ -20,21 +20,24 @@ from homeassistant.const import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.typing import StateType
 from .const import (
+    CORE_ONLY_GROUPS,
     CORE_SENSORS,
     MODULE_ELEVATION,
     PRECIP_UNIT_INCH,
     TEMP_UNIT_FAHRENHEIT,
+    TIMELINE_GROUPS,
     WIND_UNIT_KN,
     WIND_UNIT_MPH,
     WIND_UNIT_MS,
 )
 from .coordinator import HaOpenMeteoCoordinator
 from .entity import HaOpenMeteoEntity
-from .helpers import configured_units, parse_api_datetime
-from .models.variables import BUCKET_CURRENT, VariableDef
+from .helpers import configured_groups, configured_pressure_levels, configured_units, parse_api_datetime
+from .models.variables import VariableDef, expand_variables
 
 PARALLEL_UPDATES = 0
 
@@ -53,7 +56,7 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
-    """Create sensors for every selected variable."""
+    """Create the small core sensor set, plus any opt-in extra groups."""
     entities: list[HaOpenMeteoSensor] = []
     temp_unit, wind_unit, precip_unit = configured_units(entry)
 
@@ -67,13 +70,7 @@ async def async_setup_entry(
                 )
             )
             continue
-        selected = coordinator.selected_variables()
-        current_keys = {
-            variable.key for variable in selected if variable.bucket == BUCKET_CURRENT
-        }
-        for variable in selected:
-            if _is_duplicate_series(variable, current_keys):
-                continue
+        for variable in sensor_variables(module, entry):
             entities.append(
                 HaOpenMeteoSensor(
                     coordinator,
@@ -84,7 +81,21 @@ async def async_setup_entry(
                 )
             )
 
+    _async_remove_orphan_sensors(hass, entry, {entity.unique_id for entity in entities})
     async_add_entities(entities)
+
+
+def _async_remove_orphan_sensors(
+    hass: HomeAssistant, entry: ConfigEntry, keep_unique_ids: set[str]
+) -> None:
+    """Drop leftover sensors from earlier versions that created every variable."""
+    registry = er.async_get(hass)
+    for entity_entry in er.async_entries_for_config_entry(registry, entry.entry_id):
+        if entity_entry.domain != "sensor":
+            continue
+        if entity_entry.unique_id in keep_unique_ids:
+            continue
+        registry.async_remove(entity_entry.entity_id)
 
 
 class HaOpenMeteoSensor(HaOpenMeteoEntity, SensorEntity):
@@ -154,13 +165,31 @@ _BUCKET_SUFFIX = {
 }
 
 
-def _is_duplicate_series(variable: VariableDef, current_keys: set[str]) -> bool:
-    """Skip hourly/15-min copies when a current sensor already covers the key."""
-    return variable.bucket in {"hourly", "minutely_15"} and variable.key in current_keys
-
-
-def _is_core_sensor(module: str, variable: VariableDef) -> bool:
-    return (module, variable.bucket, variable.key) in CORE_SENSORS
+def sensor_variables(module: str, entry: ConfigEntry) -> list[VariableDef]:
+    """Variables that should exist as sensors for a module."""
+    groups = [
+        group_id
+        for group_id in configured_groups(entry).get(module, [])
+        if group_id not in TIMELINE_GROUPS.get(module, frozenset())
+    ]
+    selected: list[VariableDef] = []
+    seen: set[tuple[str, str]] = set()
+    for group_id in groups:
+        for variable in expand_variables(
+            module, [group_id], configured_pressure_levels(entry)
+        ):
+            if group_id in CORE_ONLY_GROUPS and (
+                module,
+                variable.bucket,
+                variable.key,
+            ) not in CORE_SENSORS:
+                continue
+            marker = (variable.bucket, variable.key)
+            if marker in seen:
+                continue
+            seen.add(marker)
+            selected.append(variable)
+    return selected
 
 
 def _sensor_name(variable: VariableDef) -> str:
@@ -193,7 +222,7 @@ def _description_from_variable(
         native_unit_of_measurement=unit,
         icon=variable.icon,
         entity_category=EntityCategory.DIAGNOSTIC if diagnostic else None,
-        entity_registry_enabled_default=_is_core_sensor(module, variable),
+        entity_registry_enabled_default=True,
     )
 
 

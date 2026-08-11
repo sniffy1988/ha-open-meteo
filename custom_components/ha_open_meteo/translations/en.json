@@ -38,7 +38,7 @@
       },
       "groups": {
         "title": "Variable groups",
-        "description": "Only selected groups become sensors. The weather entity is created when Weather Forecast is enabled.",
+        "description": "Hourly and daily forecasts live on the weather entity. Current conditions create a small core sensor set. Enable extra groups (solar, soil, pollen, …) only if you want those extra sensors.",
         "data": {
           "groups_forecast": "Forecast",
           "groups_air_quality": "Air quality",
@@ -82,7 +82,7 @@
       },
       "groups": {
         "title": "Variable groups",
-        "description": "Sensors are created only for the groups you select.",
+        "description": "Hourly and daily forecasts live on the weather entity. Extra groups add more sensors; leave them off unless you need them.",
         "data": {
           "groups_forecast": "Forecast",
           "groups_air_quality": "Air quality",

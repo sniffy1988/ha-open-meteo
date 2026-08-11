@@ -69,6 +69,15 @@ def configured_groups(entry: ConfigEntry) -> dict[str, list[str]]:
     return dict(DEFAULT_GROUPS)
 
 
+def default_groups_for_modules(modules: list[str]) -> dict[str, list[str]]:
+    """Slim default groups for the modules enabled on an entry."""
+    return {
+        module: list(DEFAULT_GROUPS[module])
+        for module in modules
+        if module in DEFAULT_GROUPS
+    }
+
+
 def configured_models(entry: ConfigEntry) -> list[str]:
     models = opt(entry, CONF_MODELS, DEFAULT_MODELS)
     return list(models) if models else list(DEFAULT_MODELS)

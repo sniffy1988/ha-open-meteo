@@ -90,7 +90,7 @@ MODULE_LABELS = {
 class HaOpenMeteoConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle adding a location."""
 
-    VERSION = 1
+    VERSION = 2
 
     def __init__(self) -> None:
         self._data: dict[str, Any] = {}

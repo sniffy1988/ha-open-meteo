@@ -282,19 +282,43 @@ GROUP_LABELS: Final[dict[str, str]] = {
     "monthly": "Monthly",
 }
 
+# Hourly/daily/15-min series belong on the weather entity, not as extra sensors.
+TIMELINE_GROUPS: Final[dict[str, frozenset[str]]] = {
+    MODULE_FORECAST: frozenset(
+        {
+            "hourly_core",
+            "hourly_extra",
+            "minutely_15",
+            "daily_core",
+            "daily_extra",
+        }
+    ),
+    MODULE_AIR_QUALITY: frozenset({"hourly"}),
+}
+
+# These groups only expose CORE_SENSORS. Opt-in groups (pollen, solar, …) create
+# every variable in the group.
+CORE_ONLY_GROUPS: Final[frozenset[str]] = frozenset(
+    {
+        "current",
+        "pollutants",
+        "aqi",
+        "waves",
+        "sst",
+        "discharge",
+        "hourly_core",
+        "daily",
+    }
+)
+
 MODULE_GROUP_IDS: Final[dict[str, tuple[str, ...]]] = {
     MODULE_FORECAST: (
         "current",
-        "hourly_core",
-        "hourly_extra",
-        "minutely_15",
-        "daily_core",
-        "daily_extra",
         "solar",
         "soil",
         "pressure_levels",
     ),
-    MODULE_AIR_QUALITY: ("pollutants", "aqi", "pollen", "extra", "hourly"),
+    MODULE_AIR_QUALITY: ("pollutants", "aqi", "pollen", "extra"),
     MODULE_MARINE: ("waves", "swell", "currents", "sst", "daily"),
     MODULE_FLOOD: ("discharge",),
     MODULE_ENSEMBLE: ("hourly_core", "daily_core"),
